@@ -5,8 +5,11 @@ set -o errexit
 echo "==> Installing dependencies..."
 pip install -r requirements.txt
 
+echo "==> Creating static directory if needed..."
+mkdir -p static
+
 echo "==> Collecting static files..."
-python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input --ignore="*.scss" --ignore="*.less"
 
 echo "==> Running migrations..."
 python manage.py migrate

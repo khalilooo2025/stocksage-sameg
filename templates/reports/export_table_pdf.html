@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 12mm;
+        }
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 10px;
+            color: #111827;
+        }
+        h1 {
+            font-size: 16px;
+            margin: 0 0 4px 0;
+        }
+        .meta {
+            margin-bottom: 10px;
+            color: #4b5563;
+            font-size: 9px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 5px 6px;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: 700;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <div class="meta">Genere le {{ generated_at }}</div>
+    <table>
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ headers|length }}">Aucune donnee.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

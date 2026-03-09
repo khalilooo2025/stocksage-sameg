@@ -1,0 +1,108 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}BL Clients{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-1"><i class="bi bi-truck me-2"></i>Bons de Livraison Clients</h1>
+            <p class="text-muted">Livraisons aux clients par les techniciens</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'customer_delivery_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Nouveau BL
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">-- Tous les statuts --</option>
+                        {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select name="client" class="form-select form-select-sm">
+                        <option value="">-- Tous les clients --</option>
+                        {% for client in clients %}
+                        <option value="{{ client.pk }}" {% if request.GET.client == client.pk|stringformat:"s" %}selected{% endif %}>{{ client.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-search me-1"></i>Filtrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tableau -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {% if deliveries %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Numéro BL</th>
+                            <th>Client</th>
+                            <th>Technicien</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for delivery in deliveries %}
+                        <tr class="cursor-pointer" onclick="window.location='{% url 'customer_delivery_detail' delivery.pk %}';">
+                            <td><strong>{{ delivery.number }}</strong></td>
+                            <td>{{ delivery.client.name }}</td>
+                            <td>{{ delivery.technician.full_name }}</td>
+                            <td>{{ delivery.delivery_date|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if delivery.status == 'draft' %}
+                                <span class="badge bg-warning">Brouillon</span>
+                                {% elif delivery.status == 'valide' %}
+                                <span class="badge bg-success">Validé</span>
+                                {% elif delivery.status == 'facture' %}
+                                <span class="badge bg-info">Facturé</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'customer_delivery_detail' delivery.pk %}" class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">Aucun BL trouvé</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="card-footer d-flex justify-content-center">
+      {% include 'layout/pagination.html' %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    tr.cursor-pointer { cursor: pointer; }
+    tr.cursor-pointer:hover { background-color: #f8f9fa; }
+</style>
+{% endblock %}

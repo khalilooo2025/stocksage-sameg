@@ -1,0 +1,30 @@
+{% extends "layout/base.html" %}
+{% block title %}Entrepôts{% endblock %}
+{% block breadcrumb %}<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Accueil</a></li><li class="breadcrumb-item active">Stock</li></ol></nav>{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4">Entrepôts & Stock</h4>
+<div class="row g-3">
+  {% for wh in warehouses %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          {% if wh.warehouse_type == 'main' %}
+          <span class="badge bg-primary">Principal</span>
+          {% else %}
+          <span class="badge bg-info text-dark">Technicien</span>
+          {% endif %}
+          <span class="fw-semibold">{{ wh.name }}</span>
+        </div>
+        <div class="text-muted small mb-3">{{ wh.code }}{% if wh.owner %} · {{ wh.owner.full_name }}{% endif %}</div>
+        <a href="{% url 'stock_warehouse_detail' wh.pk %}" class="btn btn-outline-primary btn-sm w-100">
+          <i class="bi bi-eye me-1"></i>Voir le stock
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><div class="alert alert-info">Aucun entrepôt configuré.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

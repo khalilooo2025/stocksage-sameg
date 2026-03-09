@@ -1,0 +1,58 @@
+{% extends "layout/base.html" %}
+{% block title %}{{ session.number }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <a href="{% url 'inventory_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+    <div>
+      <h4 class="fw-bold mb-0">{{ session.number }}</h4>
+      <span class="text-muted small">{{ session.warehouse.name }}</span>
+    </div>
+    {% if session.status == 'open' %}<span class="badge bg-warning text-dark fs-6">En cours</span>
+    {% else %}<span class="badge bg-success fs-6">Clôturé</span>{% endif %}
+  </div>
+  {% if session.status == 'open' %}
+  <form method="post" action="{% url 'inventory_close' session.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-danger" onclick="return confirm('Clôturer l\'inventaire et appliquer les régularisations ?')">
+      <i class="bi bi-lock me-1"></i>Clôturer
+    </button>
+  </form>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="card-header fw-semibold d-flex justify-content-between">
+    <span>Lignes inventaire</span>
+    <span class="text-muted small">{{ lines|length }} article(s)</span>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Produit</th><th>Catégorie</th><th>Théorique</th><th>Réel</th><th>Écart</th>{% if session.status == 'open' %}<th>Modifier</th>{% endif %}</tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr {% if line.difference != 0 %}class="table-warning"{% endif %}>
+          <td>{{ line.product.designation }}</td>
+          <td class="text-muted small">{{ line.product.category.name|default:"—" }}</td>
+          <td>{{ line.theoretical_qty }}</td>
+          <td class="fw-bold">{{ line.actual_qty }}</td>
+          <td class="{% if line.difference > 0 %}text-success{% elif line.difference < 0 %}text-danger{% endif %} fw-bold">
+            {% if line.difference > 0 %}+{% endif %}{{ line.difference }}
+          </td>
+          {% if session.status == 'open' %}
+          <td>
+            <form method="post" action="{% url 'inventory_update_line' session.pk line.pk %}" class="d-flex gap-1">
+              {% csrf_token %}
+              <input type="number" name="actual_qty" value="{{ line.actual_qty }}" step="0.01" min="0" class="form-control form-control-sm" style="width:100px">
+              <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-check"></i></button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Aucune ligne.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}BL Client - {{ delivery.number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-1">
+                <i class="bi bi-truck me-2"></i>{{ delivery.number }}
+            </h1>
+            <p class="text-muted">BL Client - {{ delivery.client.name }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'customer_delivery_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Détails -->
+        <div class="col-lg-8">
+            <!-- Informations principales -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Client</p>
+                            <p class="h6">{{ delivery.client.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Technicien</p>
+                            <p class="h6">{{ delivery.technician.full_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Date BL</p>
+                            <p class="h6">{{ delivery.delivery_date|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Statut</p>
+                            <p>
+                                {% if delivery.status == 'draft' %}
+                                <span class="badge bg-warning">Brouillon</span>
+                                {% elif delivery.status == 'valide' %}
+                                <span class="badge bg-success">Validé</span>
+                                {% elif delivery.status == 'facture' %}
+                                <span class="badge bg-info">Facturé</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Nouveaux champs affichés -->
+                    {% if delivery.order_number or delivery.intervention_details %}
+                    <hr>
+
+                    {% if delivery.order_number %}
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">N° Ordre</p>
+                        <p class="h6">{{ delivery.order_number }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if delivery.intervention_details %}
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">Détails Intervention</p>
+                        <p class="h6" style="white-space: pre-wrap;">{{ delivery.intervention_details }}</p>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if delivery.notes %}
+                    <div>
+                        <p class="text-muted mb-1">Notes</p>
+                        <p class="h6" style="white-space: pre-wrap;">{{ delivery.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Articles livrés -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Articles livrés</h5>
+                </div>
+                <div class="card-body">
+                    {% if lines %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="text-end">Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in lines %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ line.product.designation }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ line.product.category.name }}</small>
+                                    </td>
+                                    <td class="text-end">{{ line.quantity }} {{ line.product.unit }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">Aucun article</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if delivery.status == 'draft' %}
+                    <a href="{% url 'customer_delivery_edit' delivery.pk %}" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-pencil me-1"></i>Modifier
+                    </a>
+
+                    <form method="post" action="{% url 'customer_delivery_validate' delivery.pk %}" class="d-grid" onsubmit="return confirm('Valider ce BL ? Cette action est définitive.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Valider
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <form method="post" action="{% url 'customer_delivery_delete' delivery.pk %}" class="d-grid" onsubmit="return confirm('Supprimer ce BL ? Cette action est définitive.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-1"></i>Supprimer
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info small">
+                        <i class="bi bi-lock me-2"></i>
+                        Ce BL ne peut plus être modifié (Statut: {{ delivery.get_status_display }}).
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Audit -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historique</h5>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-2">
+                        <strong>Créé par</strong><br>
+                        {{ delivery.created_by.full_name }}<br>
+                        <span class="text-muted">{{ delivery.created_at|date:"d/m/Y H:i" }}</span>
+                    </p>
+                    {% if delivery.updated_by %}
+                    <hr>
+                    <p class="mb-0">
+                        <strong>Modifié par</strong><br>
+                        {{ delivery.updated_by.full_name }}<br>
+                        <span class="text-muted">{{ delivery.updated_at|date:"d/m/Y H:i" }}</span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-600 {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

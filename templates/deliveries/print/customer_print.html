@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BL Client {{ delivery.number }}</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    color: #1a1a2e;
+    background: #f0f2f5;
+  }
+
+  .print-controls {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .print-controls .doc-ref { font-weight: 600; font-size: 14px; }
+  .btn-print {
+    background: #00897b;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  .btn-print:hover { background: #00695c; }
+  .btn-back {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-back:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+  .page-wrapper {
+    padding-top: 60px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 40px;
+  }
+  .document {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 20mm;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .doc-stripe {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #00897b, #4db6ac);
+  }
+
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12mm;
+    border-bottom: 3px solid #00897b;
+    padding-bottom: 8mm;
+    padding-top: 4mm;
+  }
+  .company-block .company-name { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+  .company-block .company-subtitle { font-size: 11px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .doc-type-block { text-align: right; }
+  .doc-type-block .doc-type { font-size: 20px; font-weight: 800; color: #00897b; text-transform: uppercase; }
+  .doc-type-block .doc-number { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-top: 4px; }
+  .doc-type-block .doc-status {
+    display: inline-block; margin-top: 6px; padding: 3px 10px;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .status-draft { background: #fff3cd; color: #856404; }
+  .status-valide { background: #d1e7dd; color: #0f5132; }
+  .status-facture { background: #cff4fc; color: #055160; }
+
+  /* Blocs client / technicien côte à côte */
+  .parties-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6mm;
+    margin-bottom: 10mm;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 10px;
+    padding: 5mm;
+  }
+  .party-block .party-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #00897b;
+    margin-bottom: 3px;
+  }
+  .party-block .party-name { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+  .party-block .party-sub { font-size: 11px; color: #6c757d; margin-top: 2px; }
+  .party-arrow { font-size: 24px; color: #00897b; text-align: center; }
+
+  .info-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; margin-bottom: 8mm; }
+  .info-box { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 4mm; }
+  .info-box .info-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6c757d; margin-bottom: 3px; }
+  .info-box .info-value { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .info-box .info-sub { font-size: 11px; color: #6c757d; margin-top: 2px; }
+
+  /* Bloc intervention */
+  .intervention-box {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 8px;
+    padding: 5mm;
+    margin-bottom: 8mm;
+  }
+  .intervention-box .int-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #00897b;
+    margin-bottom: 3px;
+  }
+  .intervention-box .int-value { font-size: 13px; color: #1a1a2e; line-height: 1.5; }
+
+  .lines-table { width: 100%; border-collapse: collapse; margin-bottom: 8mm; }
+  .lines-table thead tr { background: #1a1a2e; color: #fff; }
+  .lines-table thead th { padding: 8px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
+  .lines-table thead th.right { text-align: right; }
+  .lines-table thead th.center { text-align: center; }
+  .lines-table tbody tr:nth-child(even) { background: #f0fdf4; }
+  .lines-table tbody td { padding: 8px 10px; border-bottom: 1px solid #e9ecef; vertical-align: middle; }
+  .lines-table tbody td.right { text-align: right; }
+  .lines-table tbody td.center { text-align: center; }
+  .product-name { font-weight: 600; }
+  .product-code { font-size: 11px; color: #6c757d; }
+
+  .notes-section { background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 4px; padding: 5mm; margin-bottom: 8mm; }
+  .notes-section .notes-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #856404; margin-bottom: 4px; }
+
+  /* Confirmation de livraison */
+  .confirm-box {
+    background: #f0fdf4;
+    border: 2px dashed #a5d6a7;
+    border-radius: 8px;
+    padding: 6mm;
+    margin-bottom: 8mm;
+    text-align: center;
+  }
+  .confirm-box .confirm-title { font-size: 12px; font-weight: 700; color: #00897b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .confirm-box .confirm-text { font-size: 11px; color: #6c757d; }
+
+  .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15mm; margin-top: 10mm; border-top: 1px solid #dee2e6; padding-top: 8mm; }
+  .sig-box .sig-label { font-size: 10px; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15mm; }
+  .sig-box .sig-line { border-bottom: 1px solid #adb5bd; padding-top: 3px; font-size: 11px; color: #adb5bd; text-align: center; }
+
+  .doc-footer { position: absolute; bottom: 10mm; left: 20mm; right: 20mm; border-top: 1px solid #dee2e6; padding-top: 4mm; display: flex; justify-content: space-between; font-size: 9px; color: #adb5bd; }
+
+  @media print {
+    body { background: #fff; }
+    .print-controls { display: none !important; }
+    .page-wrapper { padding-top: 0; }
+    .document { box-shadow: none; width: 100%; min-height: auto; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <div class="doc-ref">🚚 {{ delivery.number }} — Bon de Livraison Client</div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <a href="{% url 'customer_delivery_detail' delivery.pk %}" class="btn-back">← Retour</a>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button>
+  </div>
+</div>
+
+<div class="page-wrapper">
+  <div class="document">
+    <div class="doc-stripe"></div>
+
+    <!-- En-tête -->
+    <div class="doc-header">
+      <div class="company-block">
+        <div class="company-name">SAMEG</div>
+        <div class="company-subtitle">Gestion de Stock & Livraisons</div>
+      </div>
+      <div class="doc-type-block">
+        <div class="doc-type">Bon de Livraison Client</div>
+        <div class="doc-number">{{ delivery.number }}</div>
+        <div>
+          {% if delivery.status == 'draft' %}<span class="doc-status status-draft">Brouillon</span>
+          {% elif delivery.status == 'valide' %}<span class="doc-status status-valide">Validé</span>
+          {% else %}<span class="doc-status status-facture">Facturé</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Parties -->
+    <div class="parties-row">
+      <div class="party-block">
+        <div class="party-label">🏭 Expéditeur (Technicien)</div>
+        <div class="party-name">{{ delivery.technician.full_name }}</div>
+      </div>
+      <div class="party-arrow">➜</div>
+      <div class="party-block" style="text-align:right;">
+        <div class="party-label">🏢 Client destinataire</div>
+        <div class="party-name">{{ delivery.client.name }}</div>
+        {% if delivery.client.address %}
+        <div class="party-sub">{{ delivery.client.address }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Infos -->
+    <div class="info-row">
+      <div class="info-box">
+        <div class="info-label">Référence BL</div>
+        <div class="info-value">{{ delivery.number }}</div>
+        <div class="info-sub">Date : {{ delivery.delivery_date|date:"d/m/Y" }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">N° Ordre Client</div>
+        <div class="info-value">{{ delivery.order_number|default:"—" }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Créé par</div>
+        <div class="info-value">{{ delivery.created_by.full_name|default:"—" }}</div>
+        <div class="info-sub">{{ delivery.created_at|date:"d/m/Y" }}</div>
+      </div>
+    </div>
+
+    <!-- Détails intervention -->
+    {% if delivery.intervention_details %}
+    <div class="intervention-box">
+      <div class="int-title">🔧 Détails de l'intervention</div>
+      <div class="int-value">{{ delivery.intervention_details }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Tableau des lignes -->
+    <table class="lines-table">
+      <thead>
+        <tr>
+          <th style="width:50%">Désignation produit</th>
+          <th>Code</th>
+          <th>Catégorie</th>
+          <th class="right">Quantité</th>
+          <th class="center">Unité</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td><div class="product-name">{{ line.product.designation }}</div></td>
+          <td class="product-code">{{ line.product.code }}</td>
+          <td class="product-code">{{ line.product.category.name|default:"—" }}</td>
+          <td class="right">{{ line.quantity }}</td>
+          <td class="center">{{ line.product.unit }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:#6c757d;padding:20px;">Aucune ligne.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if delivery.notes %}
+    <div class="notes-section">
+      <div class="notes-label">Notes</div>
+      <div>{{ delivery.notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Confirmation livraison -->
+    <div class="confirm-box">
+      <div class="confirm-title">Bon pour réception</div>
+      <div class="confirm-text">Je soussigné(e) certifie avoir reçu les articles mentionnés ci-dessus en bon état.</div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="sig-row">
+      <div class="sig-box">
+        <div class="sig-label">Technicien — {{ delivery.technician.full_name }}</div>
+        <div class="sig-line">Signature & date</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">Client — {{ delivery.client.name }}</div>
+        <div class="sig-line">Signature, cachet & date</div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>StockSage — SAMEG</span>
+      <span>{{ delivery.number }} — Imprimé le {% now "d/m/Y à H:i" %}</span>
+      <span>Page 1</span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

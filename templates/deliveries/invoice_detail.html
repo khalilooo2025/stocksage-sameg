@@ -1,0 +1,55 @@
+{% extends "layout/base.html" %}
+{% block title %}{{ invoice.number }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+    <div>
+      <h4 class="fw-bold mb-0">{{ invoice.number }}</h4>
+      <span class="text-muted small">{{ invoice.supplier.name }} · {{ invoice.invoice_date }}</span>
+    </div>
+    <span class="badge badge-{{ invoice.status }} fs-6">{{ invoice.get_status_display }}</span>
+  </div>
+  <div class="d-flex gap-2 align-items-center">
+    <a href="{% url 'invoice_print' invoice.pk %}" target="_blank" class="btn btn-outline-dark">
+      <i class="bi bi-printer me-1"></i>Imprimer
+    </a>
+    {% if invoice.status == 'draft' %}
+    <form method="post" action="{% url 'invoice_validate' invoice.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success" onclick="return confirm('Valider cette facture et mettre à jour le stock ?')">
+        <i class="bi bi-check-circle me-1"></i>Valider & Stocker
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+<div class="card">
+  <div class="card-header fw-semibold">Lignes</div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead class="table-light"><tr><th>Produit</th><th>Qté</th>{% if show_prices %}<th>PU HT</th><th>Total HT</th>{% endif %}</tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ line.product.designation }}</td>
+          <td>{{ line.quantity }}</td>
+          {% if show_prices %}
+          <td>{{ line.unit_price_ht|floatformat:2 }}</td>
+          <td class="fw-bold">{{ line.total_price_ht|floatformat:2 }}</td>
+          {% endif %}
+        </tr>
+        {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">Aucune ligne.</td></tr>{% endfor %}
+      </tbody>
+      {% if show_prices %}
+      <tfoot class="table-light">
+        <tr><td colspan="3" class="text-end fw-bold">Total HT :</td><td class="fw-bold fs-5">{{ invoice.total_ht|floatformat:2 }} DA</td></tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% if invoice.notes %}
+<div class="card mt-3"><div class="card-body"><strong>Notes :</strong> {{ invoice.notes }}</div></div>
+{% endif %}
+{% endblock %}

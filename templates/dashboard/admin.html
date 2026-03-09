@@ -1,0 +1,120 @@
+{% extends "layout/base.html" %}
+{% block title %}Tableau de bord Admin{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item active">Tableau de bord</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<h4 class="fw-bold mb-4">Bonjour, {{ request.user.full_name }} <span class="badge bg-primary fs-6">Admin</span></h4>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3d5afe,#536dfe)">
+      <div class="stat-value">{{ total_clients }}</div>
+      <div class="stat-label"><i class="bi bi-people me-1"></i>Clients actifs</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#f57c00,#ffb74d)">
+      <div class="stat-value">{{ total_suppliers }}</div>
+      <div class="stat-label"><i class="bi bi-truck me-1"></i>Fournisseurs</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#00897b,#4db6ac)">
+      <div class="stat-value">{{ stock_value|floatformat:0 }}</div>
+      <div class="stat-label"><i class="bi bi-currency-exchange me-1"></i>Valeur stock (DA)</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8)">
+      <div class="stat-value">{{ total_users }}</div>
+      <div class="stat-label"><i class="bi bi-person-check me-1"></i>Utilisateurs</div>
+    </div>
+  </div>
+</div>
+
+<!-- Alerts -->
+{% if rupture_count > 0 or low_stock_count > 0 %}
+<div class="row g-3 mb-4">
+  {% if rupture_count > 0 %}
+  <div class="col-md-6">
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-0">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div><strong>{{ rupture_count }} article(s) en rupture</strong>
+        <div class="small">{% for p in rupture_products %}<a href="{% url 'product_detail' p.product.pk %}">{{ p.product.designation }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if low_stock_count > 0 %}
+  <div class="col-md-6">
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-0">
+      <i class="bi bi-exclamation-circle-fill fs-5"></i>
+      <div><strong>{{ low_stock_count }} article(s) en stock faible</strong>
+        <div class="small">{% for p in low_stock_products %}{{ p.product.designation }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Recent activity -->
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-receipt me-2"></i>Factures récentes</span>
+        <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>N°</th><th>Fournisseur</th><th>Statut</th></tr></thead>
+          <tbody>
+            {% for inv in recent_invoices %}
+            <tr>
+              <td><a href="{% url 'invoice_detail' inv.pk %}">{{ inv.number }}</a></td>
+              <td>{{ inv.supplier.name }}</td>
+              <td><span class="badge badge-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center py-3">Aucune facture</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-arrow-right-circle me-2"></i>BL Internes récents</span>
+        <a href="{% url 'internal_delivery_list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>N°</th><th>Technicien</th><th>Statut</th></tr></thead>
+          <tbody>
+            {% for d in recent_deliveries %}
+            <tr>
+              <td><a href="{% url 'internal_delivery_detail' d.pk %}">{{ d.number }}</a></td>
+              <td>{{ d.technician.full_name }}</td>
+              <td><span class="badge badge-{{ d.status }}">{{ d.get_status_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center py-3">Aucun BL</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

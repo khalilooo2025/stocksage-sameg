@@ -1,0 +1,47 @@
+{% extends "layout/base.html" %}
+{% block title %}Mouvements de stock{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4">Mouvements de stock</h4>
+<div class="card">
+  <div class="card-header">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <select name="warehouse" class="form-select form-select-sm">
+          <option value="">Tous les entrepôts</option>
+          {% for wh in warehouses %}<option value="{{ wh.pk }}" {% if request.GET.warehouse == wh.pk|stringformat:'s' %}selected{% endif %}>{{ wh.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="type" class="form-select form-select-sm">
+          <option value="">Tous les types</option>
+          {% for val, label in movement_types %}<option value="{{ val }}" {% if request.GET.type == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-auto"><button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-filter"></i> Filtrer</button></div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover table-sm mb-0">
+      <thead class="table-light">
+        <tr><th>Date</th><th>Produit</th><th>Type</th><th>Qté</th><th>Entrepôt</th><th>Référence</th><th>Par</th></tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td class="small text-muted">{{ m.created_at|date:"d/m/Y H:i" }}</td>
+          <td><a href="{% url 'product_detail' m.product.pk %}">{{ m.product.designation }}</a></td>
+          <td><span class="badge bg-secondary small">{{ m.get_movement_type_display }}</span></td>
+          <td class="fw-bold {% if m.direction == 1 %}text-success{% else %}text-danger{% endif %}">
+            {% if m.direction == 1 %}+{% else %}-{% endif %}{{ m.quantity }}
+          </td>
+          <td class="small">{{ m.warehouse.name }}</td>
+          <td class="small text-muted">{{ m.reference|default:"—" }}</td>
+          <td class="small text-muted">{{ m.created_by.full_name|default:"—" }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucun mouvement.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer d-flex justify-content-center">{% include "layout/pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

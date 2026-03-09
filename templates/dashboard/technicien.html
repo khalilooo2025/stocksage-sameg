@@ -1,0 +1,84 @@
+{% extends "layout/base.html" %}
+{% block title %}Mon Stock{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4">Mon Stock — {{ request.user.full_name }}</h4>
+
+{% if pending_count > 0 %}
+<div class="alert alert-info d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-arrow-down-circle-fill fs-4"></i>
+  <div>
+    <strong>{{ pending_count }} arrivage(s) en attente</strong>
+    <div class="small">Des livraisons sont en transit vers vous.</div>
+  </div>
+  <a href="{% url 'internal_delivery_list' %}" class="btn btn-sm btn-info ms-auto text-white">Voir</a>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3d5afe,#536dfe)">
+      <div class="stat-value">{{ total_items }}</div>
+      <div class="stat-label">Références en stock</div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="stat-card" style="background:linear-gradient(135deg,#f57c00,#ffb74d)">
+      <div class="stat-value">{{ pending_count }}</div>
+      <div class="stat-label">Arrivages en attente</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-box me-2"></i>Mon stock</span>
+        {% if tech_warehouse %}
+        <a href="{% url 'stock_warehouse_detail' tech_warehouse.pk %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>Produit</th><th>Catégorie</th><th>Qté</th></tr></thead>
+          <tbody>
+            {% for b in my_stock %}
+            <tr {% if b.is_low %}class="table-warning"{% endif %}>
+              <td>{{ b.product.designation }}</td>
+              <td class="text-muted small">{{ b.product.category.name|default:"—" }}</td>
+              <td class="fw-bold">{{ b.quantity }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Aucun article en stock</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-file-earmark-check me-2"></i>BL Clients récents</span>
+        <a href="{% url 'customer_delivery_create' %}" class="btn btn-sm btn-success">+ BL</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>N°</th><th>Client</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for bl in recent_bl %}
+            <tr>
+              <td><a href="{% url 'customer_delivery_detail' bl.pk %}">{{ bl.number }}</a></td>
+              <td>{{ bl.client.name }}</td>
+              <td class="text-muted small">{{ bl.delivery_date }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Aucun BL client</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

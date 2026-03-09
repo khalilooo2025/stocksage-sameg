@@ -1,0 +1,26 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  {% if back_url %}<a href="{{ back_url }}" class="btn btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>{% endif %}
+  <h4 class="fw-bold mb-0">{{ title }}</h4>
+</div>
+<div class="card" style="max-width: 700px;">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>{% endif %}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">{{ action|default:"Enregistrer" }}</button>
+        {% if back_url %}<a href="{{ back_url }}" class="btn btn-outline-secondary">Annuler</a>{% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

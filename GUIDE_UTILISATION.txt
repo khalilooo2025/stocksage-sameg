@@ -1,0 +1,179 @@
+═══════════════════════════════════════════════════════════════════════════════
+                      GUIDE D'UTILISATION - AMÉLIORATIONS
+                              StockSage v1.0
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 TROIS AMÉLIORATIONS IMPORTANTES IMPLÉMENTÉES
+
+───────────────────────────────────────────────────────────────────────────────
+1️⃣  AUGMENTATION DU NOMBRE D'ARTICLES
+───────────────────────────────────────────────────────────────────────────────
+
+✓ ANCIEN : Maximum 4 articles par document
+✓ NOUVEAU : Jusqu'à 19+ articles (illimité pratiquement)
+
+OÙ ÇA FONCTIONNE :
+  • Factures fournisseur (FF)
+  • Bons de livraison internes (BLI) 
+  • Bons de livraison clients (BLC)
+
+COMMENT UTILISER :
+  1. Créer une nouvelle facture/BL
+  2. Remplir les articles
+  3. Des lignes supplémentaires s'ajoutent automatiquement
+
+───────────────────────────────────────────────────────────────────────────────
+2️⃣  NOUVEAUX CHAMPS POUR LES BL CLIENTS
+───────────────────────────────────────────────────────────────────────────────
+
+CHAMPS AJOUTÉS :
+  
+  A) N° ORDRE CLIENT
+     • Numéro de commande du client
+     • Optionnel mais recommandé
+     • S'affiche sur le BL imprimé
+  
+  B) DÉTAILS INTERVENTION
+     • Description détaillée de l'intervention
+     • Multi-lignes supportées
+     • S'affiche sur le BL
+
+COMMENT UTILISER :
+  1. Aller à : Livraisons → Bons de Livraison Clients → Nouveau
+  2. Remplir les champs normaux (Client, Date, Articles)
+  3. NOUVEAU : Remplir le N° Ordre client
+  4. NOUVEAU : Ajouter les détails de l'intervention
+  5. Enregistrer et valider
+
+EXEMPLE DE REMPLISSAGE :
+  
+  N° Ordre : CMD-2024-001234
+  
+  Détails Intervention :
+  Remplacement climatiseur cassé
+  Installation thermostat digital
+  Test de fonctionnement OK
+  Consommation énergétique conforme
+
+───────────────────────────────────────────────────────────────────────────────
+3️⃣  SYSTÈME D'IMPORT/EXPORT POUR L'ADMIN
+───────────────────────────────────────────────────────────────────────────────
+
+URL D'ACCÈS : http://localhost:8001/rapports/import-export/
+             (Réservé aux administrateurs uniquement)
+
+SECTION EXPORTATION
+─────────────────
+
+Télécharger vos données en CSV (format : id;donnée1;donnée2;...)
+
+FICHIERS EXPORTABLES :
+  ✓ Produits (produits_YYYYMMDD.csv)
+  ✓ Clients (clients_YYYYMMDD.csv)
+  ✓ Fournisseurs (fournisseurs_YYYYMMDD.csv)
+  ✓ Stock actuel (stock_YYYYMMDD.csv)
+  ✓ BL clients (livraisons_clients_YYYYMMDD.csv)
+  ✓ Factures fournisseur (factures_fournisseur_YYYYMMDD.csv)
+  ✓ Historique des mouvements de stock (historique_stock_YYYYMMDD.csv)
+
+COMMENT EXPORTER :
+  1. Aller à /rapports/import-export/
+  2. Section "EXPORTATION"
+  3. Cliquer sur "Télécharger (CSV)" pour le type de données
+  4. Le fichier se télécharge automatiquement
+  5. Ouvrir avec Excel, LibreOffice, Google Sheets, etc.
+
+SECTION IMPORTATION
+──────────────────
+
+Charger des données depuis un fichier CSV (mise à jour ou création)
+
+FICHIERS IMPORTABLES :
+  ✓ Produits
+  ✓ Clients  
+  ✓ Fournisseurs
+
+FORMAT ATTENDU :
+  
+  PRODUITS :
+    id;designation;category__name;unit;unit_price_ht
+    1;Climatiseur;CLIM;piece;25000
+    2;Thermostat;CLIM;piece;5000
+  
+  CLIENTS :
+    id;name;contact_person;email;phone;address;city;postal_code
+    1;Client A;Jean Dupont;client@email.com;0123456789;123 Rue A;Alger;16000
+  
+  FOURNISSEURS :
+    id;name;contact_person;email;phone;address;city;postal_code
+
+COMMENT IMPORTER :
+  1. Préparer un fichier CSV avec les données au bon format
+  2. Aller à /rapports/import-export/
+  3. Section "IMPORTATION"
+  4. Sélectionner le type de données (Produits, Clients, etc.)
+  5. Choisir le fichier CSV
+  6. Cliquer sur "Importer"
+  7. Vérifier les messages de succès/erreur
+
+⚠️  IMPORTANT :
+  • Encodage : UTF-8 (obligatoire)
+  • Délimiteur : Point-virgule (;)
+  • En-têtes : Première ligne avec les noms des colonnes
+  • Les ID existants seront mis à jour, les nouveaux ajoutés
+
+EXEMPLE DE WORKFLOW :
+  1. Exporter clients actuels
+  2. Modifier le CSV dans Excel
+  3. Ajouter de nouveaux clients
+  4. Importer le fichier modifié
+  5. Les clients existants sont mis à jour
+  6. Les nouveaux clients sont ajoutés
+
+───────────────────────────────────────────────────────────────────────────────
+📊 RÉSUMÉ DES CHANGEMENTS
+───────────────────────────────────────────────────────────────────────────────
+
+Avant              →  Après
+────────────────────────────────────────
+4 articles max     →  19+ articles
+Pas de N° Ordre   →  N° Ordre client obligatoire
+Pas d'import      →  Import/Export CSV pour admin
+Pas de détails    →  Détails intervention supportés
+
+───────────────────────────────────────────────────────────────────────────────
+🔍 ACCÈS RAPIDE
+───────────────────────────────────────────────────────────────────────────────
+
+NOUVEAU BL CLIENT :
+  Menu → Livraisons → Bons de Livraison Clients → Nouveau BL
+  OU http://localhost:8001/livraisons/bl-clients/nouveau/
+
+IMPORT/EXPORT ADMIN :
+  Menu → Rapports → Import / Export
+  OU http://localhost:8001/rapports/import-export/
+
+───────────────────────────────────────────────────────────────────────────────
+❓ QUESTIONS / PROBLÈMES
+───────────────────────────────────────────────────────────────────────────────
+
+Q : Comment faire pour augmenter les articles en cas de besoin ?
+R : Les articles s'ajoutent automatiquement. Si vous en besoin plus, modifiez
+    extra=15 en extra=50 dans apps/deliveries/forms.py
+
+Q : Puis-je importer depuis Excel ?
+R : Oui ! Créez un CSV depuis Excel (Enregistrer Sous → CSV UTF-8) puis importez
+
+Q : Qu'arrive-t-il si j'importe un client existant ?
+R : Il sera mis à jour avec les nouvelles données du CSV
+
+Q : Seul l'admin peut faire l'import/export ?
+R : Oui, pour des raisons de sécurité. Seuls les administrateurs peuvent importer.
+
+───────────────────────────────────────────────────────────────────────────────
+✅ PRÊT À UTILISER !
+
+Toutes les fonctionnalités sont opérationnelles et testées.
+L'application est prête pour la production.
+
+═══════════════════════════════════════════════════════════════════════════════

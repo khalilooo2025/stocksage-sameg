@@ -1,0 +1,55 @@
+{% extends "layout/base.html" %}
+{% block title %}Dashboard Manager{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4">Tableau de bord Manager</h4>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3d5afe,#536dfe)">
+      <div class="stat-value">{{ total_suppliers }}</div>
+      <div class="stat-label">Fournisseurs actifs</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#00897b,#4db6ac)">
+      <div class="stat-value">{{ total_invoices }}</div>
+      <div class="stat-label">Factures total</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#f57c00,#ffb74d)">
+      <div class="stat-value">{{ draft_invoices }}</div>
+      <div class="stat-label">Factures brouillon</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#7b1fa2,#ce93d8)">
+      <div class="stat-value">{{ total_purchase|floatformat:0 }}</div>
+      <div class="stat-label">Total achats (DA)</div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span class="fw-semibold"><i class="bi bi-receipt me-2"></i>Factures récentes</span>
+    <a href="{% url 'invoice_create' %}" class="btn btn-sm btn-primary">+ Nouvelle facture</a>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light"><tr><th>N°</th><th>Fournisseur</th><th>Date</th><th>Statut</th><th></th></tr></thead>
+      <tbody>
+        {% for inv in recent_invoices %}
+        <tr>
+          <td><a href="{% url 'invoice_detail' inv.pk %}">{{ inv.number }}</a></td>
+          <td>{{ inv.supplier.name }}</td>
+          <td>{{ inv.invoice_date }}</td>
+          <td><span class="badge badge-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+          <td><a href="{% url 'invoice_detail' inv.pk %}" class="btn btn-sm btn-outline-secondary">Voir</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">Aucune facture</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

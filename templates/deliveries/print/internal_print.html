@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BL Interne {{ delivery.number }}</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    color: #1a1a2e;
+    background: #f0f2f5;
+  }
+
+  .print-controls {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .print-controls .doc-ref { font-weight: 600; font-size: 14px; }
+  .btn-print {
+    background: #f57c00;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  .btn-print:hover { background: #e65100; }
+  .btn-back {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-back:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+  .page-wrapper {
+    padding-top: 60px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 40px;
+  }
+  .document {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 20mm;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* Bande décorative haut */
+  .doc-stripe {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #f57c00, #ffb74d);
+  }
+
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12mm;
+    border-bottom: 3px solid #f57c00;
+    padding-bottom: 8mm;
+    padding-top: 4mm;
+  }
+  .company-block .company-name { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+  .company-block .company-subtitle { font-size: 11px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .doc-type-block { text-align: right; }
+  .doc-type-block .doc-type { font-size: 20px; font-weight: 800; color: #f57c00; text-transform: uppercase; }
+  .doc-type-block .doc-number { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-top: 4px; }
+  .doc-type-block .doc-status {
+    display: inline-block; margin-top: 6px; padding: 3px 10px;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .status-draft { background: #fff3cd; color: #856404; }
+  .status-valide { background: #cff4fc; color: #055160; }
+  .status-en_transit { background: #fff0d6; color: #7a4000; }
+  .status-recu { background: #d1e7dd; color: #0f5132; }
+  .status-annule { background: #f8d7da; color: #842029; }
+
+  /* Flèche de transfert */
+  .transfer-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border: 2px solid #f57c00;
+    border-radius: 10px;
+    padding: 6mm 8mm;
+    margin-bottom: 10mm;
+    gap: 8mm;
+  }
+  .transfer-party { text-align: center; flex: 1; }
+  .transfer-party .party-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #f57c00; font-weight: 700; }
+  .transfer-party .party-name { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-top: 3px; }
+  .arrow-icon { font-size: 28px; color: #f57c00; }
+
+  .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-bottom: 10mm; }
+  .info-box { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 5mm; }
+  .info-box .info-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6c757d; margin-bottom: 4px; }
+  .info-box .info-value { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .info-box .info-sub { font-size: 11px; color: #6c757d; margin-top: 2px; }
+
+  .lines-table { width: 100%; border-collapse: collapse; margin-bottom: 8mm; }
+  .lines-table thead tr { background: #1a1a2e; color: #fff; }
+  .lines-table thead th { padding: 8px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
+  .lines-table thead th.center { text-align: center; }
+  .lines-table thead th.right { text-align: right; }
+  .lines-table tbody tr:nth-child(even) { background: #fff8f0; }
+  .lines-table tbody td { padding: 8px 10px; border-bottom: 1px solid #e9ecef; vertical-align: middle; }
+  .lines-table tbody td.center { text-align: center; }
+  .lines-table tbody td.right { text-align: right; font-weight: 600; }
+  .product-name { font-weight: 600; }
+  .product-code { font-size: 11px; color: #6c757d; }
+
+  .notes-section { background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 4px; padding: 5mm; margin-bottom: 8mm; }
+  .notes-section .notes-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #856404; margin-bottom: 4px; }
+
+  .sig-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10mm; margin-top: 15mm; border-top: 1px solid #dee2e6; padding-top: 8mm; }
+  .sig-box .sig-label { font-size: 10px; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15mm; }
+  .sig-box .sig-line { border-bottom: 1px solid #adb5bd; padding-top: 3px; font-size: 11px; color: #adb5bd; text-align: center; }
+
+  .doc-footer { position: absolute; bottom: 10mm; left: 20mm; right: 20mm; border-top: 1px solid #dee2e6; padding-top: 4mm; display: flex; justify-content: space-between; font-size: 9px; color: #adb5bd; }
+
+  @media print {
+    body { background: #fff; }
+    .print-controls { display: none !important; }
+    .page-wrapper { padding-top: 0; }
+    .document { box-shadow: none; width: 100%; min-height: auto; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <div class="doc-ref">📋 {{ delivery.number }} — Bon de Livraison Interne</div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <a href="{% url 'internal_delivery_detail' delivery.pk %}" class="btn-back">← Retour</a>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button>
+  </div>
+</div>
+
+<div class="page-wrapper">
+  <div class="document">
+    <div class="doc-stripe"></div>
+
+    <!-- En-tête -->
+    <div class="doc-header">
+      <div class="company-block">
+        <div class="company-name">SAMEG</div>
+        <div class="company-subtitle">Gestion de Stock & Livraisons</div>
+      </div>
+      <div class="doc-type-block">
+        <div class="doc-type">Bon de Livraison Interne</div>
+        <div class="doc-number">{{ delivery.number }}</div>
+        <div>
+          {% if delivery.status == 'draft' %}<span class="doc-status status-draft">Brouillon</span>
+          {% elif delivery.status == 'valide' %}<span class="doc-status status-valide">Validé</span>
+          {% elif delivery.status == 'en_transit' %}<span class="doc-status status-en_transit">En Transit</span>
+          {% elif delivery.status == 'recu' %}<span class="doc-status status-recu">Reçu</span>
+          {% else %}<span class="doc-status status-annule">Annulé</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Flèche de transfert -->
+    <div class="transfer-arrow">
+      <div class="transfer-party">
+        <div class="party-label">Expéditeur</div>
+        <div class="party-name">🏭 Stock Principal</div>
+      </div>
+      <div class="arrow-icon">➜</div>
+      <div class="transfer-party">
+        <div class="party-label">Destinataire (Technicien)</div>
+        <div class="party-name">👷 {{ delivery.technician.full_name }}</div>
+      </div>
+    </div>
+
+    <!-- Infos -->
+    <div class="info-row">
+      <div class="info-box">
+        <div class="info-label">Référence BL</div>
+        <div class="info-value">{{ delivery.number }}</div>
+        <div class="info-sub">Date : {{ delivery.delivery_date|date:"d/m/Y"|default:"—" }}</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Créé par</div>
+        <div class="info-value">{{ delivery.created_by.full_name|default:"—" }}</div>
+        <div class="info-sub">Le {{ delivery.created_at|date:"d/m/Y à H:i" }}</div>
+      </div>
+    </div>
+
+    <!-- Tableau -->
+    <table class="lines-table">
+      <thead>
+        <tr>
+          <th style="width:50%">Désignation produit</th>
+          <th>Code</th>
+          <th>Catégorie</th>
+          <th class="right">Qté</th>
+          <th class="center">Unité</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td><div class="product-name">{{ line.product.designation }}</div></td>
+          <td class="product-code">{{ line.product.code }}</td>
+          <td class="product-code">{{ line.product.category.name|default:"—" }}</td>
+          <td class="right">{{ line.quantity }}</td>
+          <td class="center">{{ line.product.unit }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:#6c757d;padding:20px;">Aucune ligne.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if delivery.notes %}
+    <div class="notes-section">
+      <div class="notes-label">Notes</div>
+      <div>{{ delivery.notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Signatures -->
+    <div class="sig-row">
+      <div class="sig-box">
+        <div class="sig-label">Magasinier expéditeur</div>
+        <div class="sig-line">Signature & date</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">Technicien récepteur</div>
+        <div class="sig-line">Signature & date</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">Responsable</div>
+        <div class="sig-line">Visa & cachet</div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>StockSage — SAMEG</span>
+      <span>{{ delivery.number }} — Imprimé le {% now "d/m/Y à H:i" %}</span>
+      <span>Page 1</span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

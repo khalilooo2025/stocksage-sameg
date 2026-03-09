@@ -1,0 +1,7 @@
+"""URL racine — redirige vers dashboard ou login."""
+from django.urls import path
+from django.views.generic import RedirectView
+
+urlpatterns = [
+    path('', RedirectView.as_view(pattern_name='dashboard', permanent=False), name='home'),
+]

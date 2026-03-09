@@ -1,0 +1,190 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Import/Export - Administrateur{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-1">
+                <i class="bi bi-arrow-left-right me-2"></i>Import / Export de Donnees
+            </h1>
+            <p class="text-muted">Gerez vos donnees : importez, exportez et sauvegardez vos informations.</p>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-download me-2"></i>Exportation CSV / PDF</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Telechargez vos donnees en CSV (Excel) ou PDF.</p>
+
+                    <div class="mb-2 small text-muted">Produits</div>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="{% url 'export_products' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_products' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">Clients</div>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="{% url 'export_clients' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_clients' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">Fournisseurs</div>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="{% url 'export_suppliers' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_suppliers' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">Stock actuel</div>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="{% url 'export_stock' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_stock' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">BL Clients</div>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="{% url 'export_deliveries' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_deliveries' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">Factures Fournisseur</div>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="{% url 'export_invoices' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_invoices' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+
+                    <div class="mb-2 small text-muted">Historique mouvements stock</div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'export_stock_movements' %}?format=csv" class="btn btn-outline-primary btn-sm flex-fill">CSV</a>
+                        <a href="{% url 'export_stock_movements' %}?format=pdf" class="btn btn-outline-secondary btn-sm flex-fill">PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Importation CSV</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Importez des donnees via fichier CSV (UTF-8/Latin-1, delimitateur auto ; ou ,).</p>
+
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="import_products">
+                        <label class="form-label fw-bold"><i class="bi bi-box-seam me-1"></i> Importer des Produits</label>
+                        <div class="input-group">
+                            <input type="file" name="file" class="form-control form-control-sm" accept=".csv" required>
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-upload me-1"></i>Importer
+                            </button>
+                        </div>
+                        <small class="text-muted">En-tetes: Code ; Designation ; Categorie ; Unite ; Prix Unitaire HT</small>
+                    </form>
+
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="import_clients">
+                        <label class="form-label fw-bold"><i class="bi bi-people me-1"></i> Importer des Clients</label>
+                        <div class="input-group">
+                            <input type="file" name="file" class="form-control form-control-sm" accept=".csv" required>
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-upload me-1"></i>Importer
+                            </button>
+                        </div>
+                        <small class="text-muted">En-tetes: Code ; Nom ; Contact ; Email ; Telephone ; Adresse ; Ville</small>
+                    </form>
+
+                    <form method="post" enctype="multipart/form-data" class="mb-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="import_suppliers">
+                        <label class="form-label fw-bold"><i class="bi bi-building me-1"></i> Importer des Fournisseurs</label>
+                        <div class="input-group">
+                            <input type="file" name="file" class="form-control form-control-sm" accept=".csv" required>
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-upload me-1"></i>Importer
+                            </button>
+                        </div>
+                        <small class="text-muted">En-tetes: Code ; Nom ; Contact ; Email ; Telephone ; Adresse ; Ville</small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Format de fichier CSV :</h6>
+                            <ul class="small">
+                                <li><strong>Encodage :</strong> UTF-8 (ou Latin-1)</li>
+                                <li><strong>Delimiteur :</strong> Point-virgule (;) ou virgule (,)</li>
+                                <li><strong>Premiere ligne :</strong> En-tetes des colonnes</li>
+                            </ul>
+
+                            <h6 class="mt-3">Exemple CSV Produits :</h6>
+                            <pre class="bg-light p-2 rounded small">Code;Designation;Categorie;Unite;Prix Unitaire HT
+CLIM-001;Climatiseur Split;Climatisation;pce;45000.00
+CABLE-01;Cable 3x2.5;Electrique;m;150.00</pre>
+
+                            <h6 class="mt-3">Exemple CSV Clients :</h6>
+                            <pre class="bg-light p-2 rounded small">Code;Nom;Contact;Email;Telephone;Adresse;Ville
+CLI001;Entreprise ABC;M. Dupont;abc@mail.com;0555123456;Rue 1;Alger</pre>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Procedure d'import :</h6>
+                            <ol class="small">
+                                <li>Exportez d'abord vos donnees pour avoir le bon format</li>
+                                <li>Modifiez le fichier CSV dans Excel/LibreOffice</li>
+                                <li>Selectionnez le fichier et cliquez "Importer"</li>
+                                <li>Les codes existants seront <strong>mis a jour</strong></li>
+                                <li>Les nouveaux codes seront <strong>ajoutes</strong></li>
+                            </ol>
+
+                            <div class="alert alert-warning small mt-3">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <strong>Important :</strong> La colonne <code>Code</code> est obligatoire.
+                                Si le code existe deja, l'enregistrement sera mis a jour.
+                            </div>
+
+                            <div class="alert alert-info small">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                <strong>Astuce :</strong> Commencez par exporter pour obtenir le format exact,
+                                puis modifiez le fichier et re-importez.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-600 { font-weight: 600; }
+    pre { font-size: 0.8rem; overflow-x: auto; }
+</style>
+{% endblock %}

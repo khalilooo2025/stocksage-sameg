@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block title %}Inventaires{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0">Inventaires</h4>
+  <a href="{% url 'inventory_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nouvel inventaire</a>
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light"><tr><th>N°</th><th>Entrepôt</th><th>Statut</th><th>Créé par</th><th>Date</th><th></th></tr></thead>
+      <tbody>
+        {% for s in sessions %}
+        <tr>
+          <td><a href="{% url 'inventory_detail' s.pk %}" class="fw-semibold">{{ s.number }}</a></td>
+          <td>{{ s.warehouse.name }}</td>
+          <td>
+            {% if s.status == 'open' %}<span class="badge bg-warning text-dark">En cours</span>
+            {% else %}<span class="badge bg-success">Clôturé</span>{% endif %}
+          </td>
+          <td class="text-muted small">{{ s.created_by.full_name|default:"—" }}</td>
+          <td class="text-muted small">{{ s.created_at|date:"d/m/Y" }}</td>
+          <td class="text-end"><a href="{% url 'inventory_detail' s.pk %}" class="btn btn-sm btn-outline-secondary">Voir</a></td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Aucun inventaire.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer d-flex justify-content-center">{% include "layout/pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

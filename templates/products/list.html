@@ -1,0 +1,47 @@
+{% extends "layout/base.html" %}
+{% block title %}Produits{% endblock %}
+{% block breadcrumb %}<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Accueil</a></li><li class="breadcrumb-item active">Produits</li></ol></nav>{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0">Produits</h4>
+  <div class="d-flex gap-2">
+    <a href="{% url 'category_list' %}" class="btn btn-outline-secondary"><i class="bi bi-tags me-1"></i>Catégories</a>
+    <a href="{% url 'product_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nouveau produit</a>
+  </div>
+</div>
+<div class="card">
+  <div class="card-header">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-auto flex-grow-1"><input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Rechercher code, désignation..."></div>
+      <div class="col-auto">
+        <select name="category" class="form-select">
+          <option value="">Toutes catégories</option>
+          {% for cat in categories %}<option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-auto"><button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button></div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Code</th><th>Désignation</th><th>Catégorie</th><th>Unité</th>{% if show_prices %}<th>Prix HT</th>{% endif %}<th>Stock min.</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td class="fw-semibold">{{ p.code }}</td>
+          <td><a href="{% url 'product_detail' p.pk %}">{{ p.designation }}</a></td>
+          <td>{{ p.category.name|default:"—" }}</td>
+          <td>{{ p.get_unit_display }}</td>
+          {% if show_prices %}<td>{{ p.unit_price_ht|floatformat:2 }}</td>{% endif %}
+          <td>{{ p.min_stock_level }}</td>
+          <td class="text-end"><a href="{% url 'product_update' p.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a></td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucun produit.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}<div class="card-footer d-flex justify-content-center">{% include "layout/pagination.html" %}</div>{% endif %}
+</div>
+{% endblock %}

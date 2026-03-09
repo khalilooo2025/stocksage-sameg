@@ -1,0 +1,55 @@
+{% extends "layout/base.html" %}
+{% block title %}{{ delivery.number }}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <a href="{% url 'internal_delivery_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+    <div>
+      <h4 class="fw-bold mb-0">{{ delivery.number }}</h4>
+      <span class="text-muted small">Technicien : {{ delivery.technician.full_name }}</span>
+    </div>
+    <span class="badge badge-{{ delivery.status }} fs-6">{{ delivery.get_status_display }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'internal_delivery_print' delivery.pk %}" target="_blank" class="btn btn-outline-dark">
+      <i class="bi bi-printer me-1"></i>Imprimer
+    </a>
+    {% if delivery.status == 'draft' and not request.user.is_technicien %}
+    <form method="post" action="{% url 'internal_delivery_send' delivery.pk %}">
+      {% csrf_token %}
+      <button class="btn btn-warning" onclick="return confirm('Envoyer ce BL ? Le stock principal sera débité.')">
+        <i class="bi bi-send me-1"></i>Envoyer
+      </button>
+    </form>
+    {% endif %}
+    {% if delivery.status == 'en_transit' and request.user == delivery.technician or request.user.is_admin %}
+    <form method="post" action="{% url 'internal_delivery_receive' delivery.pk %}">
+      {% csrf_token %}
+      <button class="btn btn-success" onclick="return confirm('Confirmer la réception ? Votre stock sera crédité.')">
+        <i class="bi bi-check-circle me-1"></i>Confirmer réception
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+<div class="card">
+  <div class="card-header fw-semibold">Lignes</div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead class="table-light"><tr><th>Produit</th><th>Code</th><th>Quantité</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ line.product.designation }}</td>
+          <td class="text-muted small">{{ line.product.code }}</td>
+          <td class="fw-bold">{{ line.quantity }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="3" class="text-center text-muted py-3">Aucune ligne.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if delivery.notes %}
+<div class="card mt-3"><div class="card-body"><strong>Notes :</strong> {{ delivery.notes }}</div></div>
+{% endif %}
+{% endblock %}

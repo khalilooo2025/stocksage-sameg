@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Environnements virtuels
+env/
+venv/
+ENV/
+.env
+.venv/
+
+# Django
+db.sqlite3
+*.sqlite3
+/staticfiles/
+/media/
+local_settings.py
+*.log
+celerybeat-schedule
+celerybeat.pid
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Tests
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Secrets
+.env
+.env.*
+!.env.example
+secrets.json

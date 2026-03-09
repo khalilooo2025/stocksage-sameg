@@ -1,0 +1,199 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Bon de Livraison Client{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-1">
+                <i class="bi bi-truck me-2"></i>{{ title }}
+            </h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'customer_delivery_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-4">
+            <!-- Informations principales -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informations BL</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Numéro BL</label>
+                                {{ form.number }}
+                                {% if form.number.errors %}
+                                <div class="invalid-feedback d-block">{{ form.number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date BL</label>
+                                {{ form.delivery_date }}
+                                {% if form.delivery_date.errors %}
+                                <div class="invalid-feedback d-block">{{ form.delivery_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Client</label>
+                                {{ form.client }}
+                                {% if form.client.errors %}
+                                <div class="invalid-feedback d-block">{{ form.client.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Nouveaux champs obligatoires pour techniciens -->
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-600">N° Ordre <span class="text-danger">*</span></label>
+                                {{ form.order_number }}
+                                <small class="form-text text-muted d-block">Numéro de commande ou d'ordre du client</small>
+                                {% if form.order_number.errors %}
+                                <div class="invalid-feedback d-block">{{ form.order_number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-600">Détails Intervention</label>
+                                {{ form.intervention_details }}
+                                <small class="form-text text-muted d-block">Description détaillée de l'intervention effectuée</small>
+                                {% if form.intervention_details.errors %}
+                                <div class="invalid-feedback d-block">{{ form.intervention_details.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Notes supplémentaires</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Articles/Lignes -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Articles livré</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th>Quantité</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ formset.management_form }}
+                                    {% for form_line in formset %}
+                                    <tr>
+                                        <td>
+                                            {{ form_line.product }}
+                                        </td>
+                                        <td style="width: 150px;">
+                                            {{ form_line.quantity }}
+                                        </td>
+                                        <td style="width: 50px;">
+                                            {% if form_line.DELETE %}
+                                            <label class="form-check">
+                                                {{ form_line.DELETE }}
+                                                <span class="text-danger">Supprimer</span>
+                                            </label>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% if form_line.non_field_errors %}
+                                    <tr>
+                                        <td colspan="3">
+                                            <div class="alert alert-danger mb-0">
+                                                {{ form_line.non_field_errors }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            {{ formset.non_form_errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-save me-2"></i>Action</h5>
+                    </div>
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-check-lg me-2"></i>Enregistrer
+                        </button>
+
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Minimum un article est requis.
+                        </div>
+
+                        {% if object %}
+                        <hr>
+                        <h6 class="mb-3">Statut: <span class="badge bg-secondary">{{ object.get_status_display }}</span></h6>
+
+                        {% if object.status == 'draft' %}
+                        <a href="{% url 'customer_delivery_validate' object.pk %}" class="btn btn-success btn-sm w-100 mb-2" onclick="return confirm('Valider ce BL ?')">
+                            <i class="bi bi-check me-1"></i>Valider
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .fw-600 {
+        font-weight: 600;
+    }
+
+    .form-control, .form-select {
+        border-color: #e0e0e0;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

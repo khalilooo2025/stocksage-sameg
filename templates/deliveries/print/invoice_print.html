@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facture {{ invoice.number }}</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    color: #1a1a2e;
+    background: #f0f2f5;
+  }
+
+  /* ── Print controls (masqués à l'impression) ── */
+  .print-controls {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  .print-controls .doc-ref { font-weight: 600; font-size: 14px; }
+  .btn-print {
+    background: #3d5afe;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-print:hover { background: #1a237e; }
+  .btn-back {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-back:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+  /* ── Document ── */
+  .page-wrapper {
+    padding-top: 60px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 40px;
+  }
+  .document {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 20mm;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12mm;
+    border-bottom: 3px solid #3d5afe;
+    padding-bottom: 8mm;
+  }
+  .company-block .company-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a1a2e;
+    letter-spacing: -0.5px;
+  }
+  .company-block .company-subtitle {
+    font-size: 11px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .doc-type-block {
+    text-align: right;
+  }
+  .doc-type-block .doc-type {
+    font-size: 20px;
+    font-weight: 800;
+    color: #3d5afe;
+    text-transform: uppercase;
+  }
+  .doc-type-block .doc-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-top: 4px;
+  }
+  .doc-type-block .doc-status {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-draft { background: #fff3cd; color: #856404; }
+  .status-validated { background: #d1e7dd; color: #0f5132; }
+  .status-cancelled { background: #f8d7da; color: #842029; }
+
+  /* ── Info boxes ── */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8mm;
+    margin-bottom: 10mm;
+  }
+  .info-box {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 5mm;
+  }
+  .info-box .info-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6c757d;
+    margin-bottom: 4px;
+  }
+  .info-box .info-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+  .info-box .info-sub {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 2px;
+  }
+
+  /* ── Table ── */
+  .lines-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8mm;
+  }
+  .lines-table thead tr {
+    background: #1a1a2e;
+    color: #fff;
+  }
+  .lines-table thead th {
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+  }
+  .lines-table thead th.right { text-align: right; }
+  .lines-table tbody tr:nth-child(even) { background: #f8f9fa; }
+  .lines-table tbody tr:hover { background: #e8eaff; }
+  .lines-table tbody td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+  }
+  .lines-table tbody td.right { text-align: right; }
+  .lines-table .product-name { font-weight: 600; }
+  .lines-table .product-code { font-size: 11px; color: #6c757d; }
+  .lines-table tfoot td {
+    padding: 8px 10px;
+    border-top: 2px solid #1a1a2e;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .lines-table tfoot .total-label { text-align: right; color: #6c757d; }
+  .lines-table tfoot .total-value { text-align: right; color: #3d5afe; font-size: 16px; }
+
+  /* ── Notes ── */
+  .notes-section {
+    background: #fff8e1;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+    padding: 5mm;
+    margin-bottom: 8mm;
+  }
+  .notes-section .notes-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #856404;
+    margin-bottom: 4px;
+  }
+
+  /* ── Signatures ── */
+  .sig-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15mm;
+    margin-top: 15mm;
+    border-top: 1px solid #dee2e6;
+    padding-top: 8mm;
+  }
+  .sig-box .sig-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15mm;
+  }
+  .sig-box .sig-line {
+    border-bottom: 1px solid #adb5bd;
+    padding-top: 3px;
+    font-size: 11px;
+    color: #adb5bd;
+    text-align: center;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 20mm;
+    right: 20mm;
+    border-top: 1px solid #dee2e6;
+    padding-top: 4mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #adb5bd;
+  }
+
+  /* ── PRINT MEDIA ── */
+  @media print {
+    body { background: #fff; }
+    .print-controls { display: none !important; }
+    .page-wrapper { padding-top: 0; }
+    .document { box-shadow: none; width: 100%; min-height: auto; }
+    .lines-table tbody tr:hover { background: inherit; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Barre de contrôle (masquée à l'impression) -->
+<div class="print-controls">
+  <div class="doc-ref">
+    📄 {{ invoice.number }} — Facture Fournisseur
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <a href="{% url 'invoice_detail' invoice.pk %}" class="btn-back">← Retour</a>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button>
+  </div>
+</div>
+
+<!-- Document A4 -->
+<div class="page-wrapper">
+  <div class="document">
+
+    <!-- En-tête -->
+    <div class="doc-header">
+      <div class="company-block">
+        <div class="company-name">SAMEG</div>
+        <div class="company-subtitle">Gestion de Stock & Livraisons</div>
+      </div>
+      <div class="doc-type-block">
+        <div class="doc-type">Facture Fournisseur</div>
+        <div class="doc-number">{{ invoice.number }}</div>
+        <div>
+          {% if invoice.status == 'draft' %}
+          <span class="doc-status status-draft">Brouillon</span>
+          {% elif invoice.status == 'validated' %}
+          <span class="doc-status status-validated">Validée</span>
+          {% else %}
+          <span class="doc-status status-cancelled">Annulée</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Infos -->
+    <div class="info-row">
+      <div class="info-box">
+        <div class="info-label">Fournisseur</div>
+        <div class="info-value">{{ invoice.supplier.name }}</div>
+        {% if invoice.supplier.contact_email %}
+        <div class="info-sub">{{ invoice.supplier.contact_email }}</div>
+        {% endif %}
+        {% if invoice.supplier.phone %}
+        <div class="info-sub">{{ invoice.supplier.phone }}</div>
+        {% endif %}
+      </div>
+      <div class="info-box">
+        <div class="info-label">Référence</div>
+        <div class="info-value">{{ invoice.number }}</div>
+        <div class="info-sub">Date : {{ invoice.invoice_date|date:"d/m/Y" }}</div>
+        <div class="info-sub">Créé par : {{ invoice.created_by.full_name|default:"—" }}</div>
+      </div>
+    </div>
+
+    <!-- Tableau des lignes -->
+    <table class="lines-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Désignation</th>
+          <th>Code</th>
+          <th class="right">Quantité</th>
+          {% if show_prices %}
+          <th class="right">PU HT (DA)</th>
+          <th class="right">Total HT (DA)</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>
+            <div class="product-name">{{ line.product.designation }}</div>
+            {% if line.product.category %}
+            <div class="product-code">{{ line.product.category.name }}</div>
+            {% endif %}
+          </td>
+          <td class="product-code">{{ line.product.code }}</td>
+          <td class="right">{{ line.quantity }} {{ line.product.unit }}</td>
+          {% if show_prices %}
+          <td class="right">{{ line.unit_price_ht|floatformat:2 }}</td>
+          <td class="right"><strong>{{ line.total_price_ht|floatformat:2 }}</strong></td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:#6c757d;padding:20px;">Aucune ligne.</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if show_prices %}
+      <tfoot>
+        <tr>
+          <td colspan="{% if show_prices %}3{% else %}2{% endif %}" class="total-label">TOTAL HORS TAXES</td>
+          <td></td>
+          <td class="total-value">{{ invoice.total_ht|floatformat:2 }} DA</td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+
+    <!-- Notes -->
+    {% if invoice.notes %}
+    <div class="notes-section">
+      <div class="notes-label">Notes</div>
+      <div>{{ invoice.notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Signatures -->
+    <div class="sig-row">
+      <div class="sig-box">
+        <div class="sig-label">Responsable Achats</div>
+        <div class="sig-line">Signature & cachet</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-label">Fournisseur</div>
+        <div class="sig-line">Signature & cachet</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="doc-footer">
+      <span>StockSage — SAMEG</span>
+      <span>{{ invoice.number }} — Imprimé le {% now "d/m/Y à H:i" %}</span>
+      <span>Page 1</span>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

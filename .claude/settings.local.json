@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for app in common users clients suppliers products stock deliveries inventory notifications reports audit)",
+      "Bash(do touch apps/$app/__init__.py)",
+      "Bash(done)",
+      "Bash(cat /c/Users/Khalilwork/Desktop/stocksameg/config/settings/*.py)",
+      "Bash(/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe --version)",
+      "Bash(PYTHON=\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\")",
+      "Bash($PYTHON -c \"import django; print\\(django.VERSION\\)\")",
+      "Bash(PIP=\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/Scripts/pip.exe\")",
+      "Bash($PIP install -r requirements/base.txt)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/Scripts/pip.exe\" install django djangorestframework python-decouple whitenoise django-cors-headers djangorestframework-simplejwt drf-spectacular django-filter Pillow)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py makemigrations)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" -c \"from drf_spectacular.views import SpectacularAPIView; print\\(dir\\(\\)\\)\")",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" -c \"import drf_spectacular.views as v; print\\([x for x in dir\\(v\\) if ''Swagger'' in x or ''UI'' in x]\\)\")",
+      "Bash(DJANGO_SETTINGS_MODULE=config.settings.local \"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" -c \"import drf_spectacular.views as v; print\\([x for x in dir\\(v\\) if ''Swagger'' in x or ''UI'' in x or ''swagger'' in x.lower\\(\\)]\\)\")",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py makemigrations clients suppliers products stock deliveries inventory notifications audit)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py migrate)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py seed_data)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py check)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py makemigrations deliveries)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py makemigrations deliveries --dry-run)",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" -c \":*)",
+      "Bash(curl -s -c /tmp/c.txt -b /tmp/c.txt \"http://127.0.0.1:8000/dashboard/\" -o /tmp/dash2.html -w \"Status: %{http_code}\")",
+      "Bash(curl -s -c /tmp/c.txt -b /tmp/c.txt \"http://127.0.0.1:8000/dashboard/\" -L --max-redirs 5 -o /tmp/dash2.html -w \"Status: %{http_code} URL: %{url_effective}\")",
+      "Bash(curl -s -c /tmp/c.txt -b /tmp/c.txt \"http://127.0.0.1:8000/livraisons/factures/nouveau/\" -L --max-redirs 3)",
+      "Bash(curl -s -c /tmp/c.txt -b /tmp/c.txt \"http://127.0.0.1:8000/livraisons/factures/nouveau/\" -L)",
+      "Bash(CSRF=\"uAuqolqf4eKZNtZJhE16dZkhQgnMuggmvF1lywZ3B3tID70RYF0U7k3hUoPEic23\")",
+      "Bash(curl -v -c /tmp/sess.txt -b /tmp/sess.txt \"http://127.0.0.1:8000/auth/login/\" -X POST -d \"username=admin&password=admin123&csrfmiddlewaretoken=$CSRF\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(\"/c/Users/Khalilwork/AppData/Local/Programs/Python/Python38/python.exe\" manage.py shell -c \":*)",
+      "Bash(curl -s \"http://127.0.0.1:8000/livraisons/bl-clients/1/imprimer/\" -H \"Cookie: sessionid=c5lo7s3bqg5xsl1bsn25oflej8s3azyx\")",
+      "Bash(python3 -c \"import sys,re; t=sys.stdin.read\\(\\); m=re.findall\\(r''exception_value.*?</pre>'',t,re.S\\); print\\([re.sub\\(''<[^>]+>'','''',x\\) for x in m[:3]]\\)\")"
+    ]
+  }
+}
